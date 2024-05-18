@@ -59,6 +59,10 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+
+
+
+
 const loginUser = async (req: Request, res: Response, next: NextFunction) =>{
     //    res.json({message:"sab badhiya hai vai,login kliye teyarrr"})
 
