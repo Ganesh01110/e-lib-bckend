@@ -1,5 +1,6 @@
 import  express from "express";
 import globalErrorhandler from "./middlewares/globalErrorhandler"
+import userRouter from "./user/userRouter"
 
 
 
@@ -14,8 +15,13 @@ app.get('/',(req, res, next) => {
       res.json({message:"welcome to elib apis"});
 })
 
+app.use("/api/users",userRouter);
+
+
 // error handler
 app.use(globalErrorhandler);
+
+
 
 
 
