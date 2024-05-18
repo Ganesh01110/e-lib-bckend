@@ -32,7 +32,7 @@ const newUser = await userModel.create({
 })
 
 // token generation
-const token = sign({sub:newUser._id},config.jwtSecret as string, {expiresIn :'7d'})
+const token = sign({sub:newUser._id},config.jwtSecret as string, {expiresIn :'7d',algorithm:"HS256"})
 
 
 
