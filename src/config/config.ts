@@ -5,6 +5,7 @@ const _config={
    port:process.env.PORT,  
    // we cannot import value from .env as per some rule so we installed dotenv packege and imported it
    databaseurl:process.env.DB_CONNECT_STRNG,
+   env:process.env.NODE_ENV
 };
 
 export const config = Object.freeze(_config);
