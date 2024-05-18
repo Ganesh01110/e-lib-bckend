@@ -1,7 +1,13 @@
 import app from "./src/app";
 import {config} from "./src/config/config"
+import connectdb from "./src/config/db"
 
-const startServer =()=>{
+const startServer = async ()=>{
+
+    //database connection
+    await connectdb();
+
+
     // const port = process.env.PORT || 3000;
      const port = config.port || 3000;
 
