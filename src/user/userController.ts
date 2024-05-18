@@ -53,10 +53,70 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
     // response
 
-    res.json({ message: "user created", accessToken: token });
+    res.status(201).json({ message: "user created", accessToken: token });
   } catch (error) {
     return next(createHttpError(500, "error while signing jwt token"));
   }
 };
 
-export { createUser };
+const loginUser = async (req: Request, res: Response, next: NextFunction) =>{
+    //    res.json({message:"sab badhiya hai vai,login kliye teyarrr"})
+
+    const { email, password } = req.body; //aquired by destructturing
+
+      //    validation
+  if ( !email || !password) {
+    const error = createHttpError(400, "all fields are required");
+
+    return next(error);
+  }
+
+//   datbase call
+
+// try{}catch(error){}
+try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+        return next(createHttpError(404, "User not found"));
+    }
+
+    // password matching
+    try {
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return next(createHttpError(400, "Incorrect credentials"));
+        }
+
+        // Proceed with further logic here (e.g., generating a token, etc.)
+    } catch (error) {
+        return next(createHttpError(500, "Error while comparing passwords"));
+    }
+
+    // access token generation
+    try{
+        const token = sign({ sub: user._id }, config.jwtSecret as string, {
+            expiresIn: "7d",
+            algorithm: "HS256",
+          });
+      
+          res.status(201).json({ message: "user logged in", accessToken: token });
+
+
+    }catch(error){
+      
+        return next(createHttpError(500, "Error while token generation"));
+
+    }
+
+} catch (error) {
+    return next(createHttpError(500, "Error while connecting to database"));
+}
+
+
+
+
+}
+
+export { createUser,loginUser };
