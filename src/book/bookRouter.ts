@@ -8,12 +8,13 @@ import path from 'node:path'
 const bookRouter = express.Router();
 
 const upload = multer({
-    dest:path.resolve(__dirname,'../../public/data/uploads'),//if the file doesnt exist multer creates it by it self
+    dest:path.resolve(__dirname,'../../public/data/uploads'),
+    //if the file doesnt exist multer creates it by it self
     limits:{fileSize:3e7}//3e7= 30mb
 })
 
 bookRouter.post('/',upload.fields([
-    {name:'coverImage',maxCount:1},
+    {name:'coverimage',maxCount:1},
     {name:'file',maxCount:1}
 ]),createBook);
 
