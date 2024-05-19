@@ -1,5 +1,5 @@
 import express from 'express'
-import {createBook,updateBook,listBooks,getsingleBook} from "./bookController"
+import {createBook,updateBook,listBooks,getsingleBook,deleteBook} from "./bookController"
 import multer from 'multer'
 import path from 'node:path'
 import authenticate from "../middlewares/authenticate"
@@ -20,7 +20,7 @@ bookRouter.post('/', authenticate, upload.fields([
 ]),createBook);
 
 
-bookRouter.get('/',listBooks)
+bookRouter.get('/',listBooks);
 
 
 
@@ -29,7 +29,10 @@ bookRouter.put('/:bookId', authenticate, upload.fields([
     {name:'file',maxCount:1}
 ]),updateBook);
 
-bookRouter.get('/:bookId',getsingleBook)
+bookRouter.get('/:bookId',getsingleBook);
+
+bookRouter.delete('/:bookId', authenticate, deleteBook);
+
 
 
 

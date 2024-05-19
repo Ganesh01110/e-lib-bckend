@@ -161,7 +161,7 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
       const uploadResultPdf = await cloudinary.uploader.upload(bookFilePath, {
         resource_type: "raw",
         filename_override: completeFileName,
-        folder: "book-covers",
+        folder: "book-pdfs",
         format: "pdf",
       });
 
@@ -225,4 +225,64 @@ const bookId = req.params.bookId;
 }
 
 }
-export { createBook, updateBook, listBooks,getsingleBook };
+
+const deleteBook =  async (req: Request, res: Response, next: NextFunction) =>{
+
+    const bookId = req.params.bookId;
+  try{
+    const book = await bookModel.findOne({_id:bookId})
+
+    if(!book){
+        return next(createHttpError(404, "error , book not found"));
+
+    }
+
+      // check access of author
+      const _req = req as AuthRequest;
+
+      if (book.author.toString() != _req.userId) {
+        return next(
+          createHttpError(403, "unauthorized,you cant delete others book")
+        );
+      }
+
+    //   deletion process
+    const coverFilesSplits = book.coverimage.split('/');
+    const coverImagePublicId = coverFilesSplits.at(-2)+'/'+(coverFilesSplits.at(-1)?.split('.').at(-2))
+    // console.log(coverFilesSplits );
+    // console.log(coverImagePublicId);
+
+    
+    const bookFilesSplits = book.file.split('/');
+    const bookImagePublicId = bookFilesSplits.at(-2)+'/'+(bookFilesSplits.at(-1))
+
+ 
+
+  try{
+
+    // delete from cloudinary
+    await cloudinary.uploader.destroy(coverImagePublicId);
+
+    await cloudinary.uploader.destroy(bookImagePublicId,{resource_type:'raw'});
+
+// delete from database
+await bookModel.deleteOne({_id:bookId});
+
+}catch(error){
+    return next(createHttpError(500, "error , book not deleted,try agin"));
+
+}
+
+
+
+    return res.status(200).json({message:"book successfully deleted"});
+    // return res.sendStatus(204);
+
+}catch(error){
+    return next(createHttpError(500, "error , while fetching a book , book not found"));
+
+}
+  
+}
+
+export { createBook, updateBook, listBooks,getsingleBook ,deleteBook};
