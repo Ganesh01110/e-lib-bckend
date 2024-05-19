@@ -85,4 +85,117 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createBook };
+//   try{
+
+// }catch(error){
+//     return next(createHttpError(404, "error , book not found"));
+
+// }
+
+const updateBook = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { title, genre } = req.body;
+    const bookId = req.params.bookId;
+
+    const book = await bookModel.findOne({ _id: bookId });
+
+    if (!book) {
+      return next(createHttpError(404, "book not found"));
+    }
+
+    // check access of author
+    const _req = req as AuthRequest;
+
+    if (book.author.toString() != _req.userId) {
+      return next(
+        createHttpError(403, "unauthorized,you cant update others book")
+      );
+    }
+
+    // check if image field exist
+    const files = req.files as { [filename: string]: Express.Multer.File[] };
+
+    let completeCoverImage = " ";
+    if (files.coverimage) {
+      const filename = files.coverimage[0].filename;
+      const coverimageMimeType = files.coverimage[0].mimetype.split("/").at(-1);
+
+      // send files to cloudnary
+      const filePath = path.resolve(
+        __dirname,
+        "../../public/data/uploads",
+        filename
+      );
+      completeCoverImage = filename;
+      // uploading cover image into cloudinary
+      const uploadResult = await cloudinary.uploader.upload(filePath, {
+        filename_override: completeCoverImage,
+        folder: "book-covers",
+        format: coverimageMimeType,
+      });
+
+      completeCoverImage = uploadResult.secure_url;
+      try {
+        await fs.promises.unlink(filePath);
+      } catch (error) {
+        return next(
+          createHttpError(
+            404,
+            "error , bookfilecover coudldnt deleted from temp"
+          )
+        );
+      }
+    }
+
+    let completeFileName = " ";
+    if (files.file) {
+      const bookFilePath = path.resolve(
+        __dirname,
+        "../../public/data/uploads",
+        files.file[0].filename
+      );
+
+      const bookFileName = files.file[0].filename;
+      completeFileName = bookFileName;
+
+      const uploadResultPdf = await cloudinary.uploader.upload(bookFilePath, {
+        resource_type: "raw",
+        filename_override: completeFileName,
+        folder: "book-covers",
+        format: "pdf",
+      });
+
+      completeFileName = uploadResultPdf.secure_url;
+
+      try {
+        await fs.promises.unlink(bookFilePath);
+      } catch (error) {
+        return next(
+          createHttpError(404, "error , bookfile coudldnt deleted from temp")
+        );
+      }
+    }
+
+    const updatedBook = await bookModel.findOneAndUpdate(
+      {
+        _id: bookId,
+      },
+      {
+        title: title,
+        genre: genre,
+        coverimage: completeCoverImage ? completeCoverImage : book.coverimage,
+        file: completeFileName ? completeFileName : book.file,
+      },
+      {
+        new: true,
+      }
+    );
+
+    res.json(updatedBook);
+  } catch (error) {
+    console.log(error);
+    return next(createHttpError(500, "error while updating files"));
+  }
+};
+
+export { createBook, updateBook };
