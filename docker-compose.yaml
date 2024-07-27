@@ -11,7 +11,7 @@ services:
             - elib-network
 
     backendapi:
-        image: codersgyan/elib-backend:v2
+        image: ganesh01110/elib-backend:v2
         container_name: elib-backend-server
         ports:
             - "5513:5513"
